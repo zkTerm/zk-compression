@@ -75,7 +75,7 @@ export TEST_WALLET_MNEMONIC="your mnemonic here"
 export TEST_RECIPIENT_ADDRESS="recipient_address_here"
 
 # Run the test
-npx tsx experiments/zk-compression-fee-test.ts
+npx tsx src/index.ts
 ```
 
 ## What Happens During the Test
