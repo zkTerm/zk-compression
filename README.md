@@ -1,21 +1,37 @@
-# ZK Compression Fee Experiment
+# ZK Compression Test on Solana Mainnet
 
-This experiment tests the real transaction fees for Light Protocol's ZK Compression on Solana Mainnet.
+This experiment demonstrates what Light Protocol's "fraction of the cost" ZK Compression actually means in practice.
 
 ## What This Tests
 
-Compares transaction fees between:
+Compares transaction costs between:
 1. **Standard SOL transfer** - Regular Solana native transfer
 2. **ZK Compressed SOL transfer** - Using Light Protocol compression
 
-## Expected Results
+## Key Findings
 
-**Both transfers cost 5,000 lamports** (0.000005 SOL)
+**Transaction Fees**: Both cost 5,000 lamports (identical)
+**Account Creation**: Standard costs ~2,039,280 lamports vs compressed nearly FREE
 
-The "98% cheaper" marketing refers to **account creation costs**, not transaction fees:
-- Creating standard token account: ~2,039,280 lamports
-- Creating compressed token account: Nearly FREE
-- **This is where the 98% savings comes from**
+The "fraction of the cost" refers to **account creation savings** (99.9%), not transaction fees.
+
+## Why This Matters
+
+ZK Compression enables applications that would be economically impossible with standard Solana accounts.
+
+### Example: Airdrop Economics
+
+Airdropping to 100,000 users:
+
+**Standard Solana:**
+- Account creation: 100,000 × 2,039,280 lamports = 203,928,000,000 lamports
+- Cost: ~203.9 SOL ($30,000+ at $150/SOL)
+
+**ZK Compression:**
+- Account creation: Nearly FREE
+- Cost: Only transaction fees
+
+**Savings: 203+ SOL on account creation alone**
 
 ## Requirements
 
@@ -41,7 +57,7 @@ TEST_RECIPIENT_ADDRESS=YourRecipientPublicKeyHere
 ## Installation
 
 ```bash
-yarn add \
+npm install \
   @lightprotocol/stateless.js \
   @lightprotocol/compressed-token \
   @solana/web3.js \
@@ -59,7 +75,7 @@ export TEST_WALLET_MNEMONIC="your mnemonic here"
 export TEST_RECIPIENT_ADDRESS="recipient_address_here"
 
 # Run the test
-yarn dev
+npx tsx experiments/zk-compression-fee-test.ts
 ```
 
 ## What Happens During the Test
@@ -78,7 +94,7 @@ yarn dev
 
 ## Real Test Results
 
-From mainnet testing on November 2025:
+From mainnet testing (November 2025):
 
 **Standard Transfer:**
 - Fee: 5,000 lamports
@@ -90,48 +106,37 @@ From mainnet testing on November 2025:
 
 ## Understanding the Results
 
-### Why Are Fees The Same?
+### Transaction Fees: Identical
 
 Solana's base transaction fee is **5,000 lamports per signature**. This applies to ALL transactions, whether standard or compressed.
 
-ZK Compression actually uses MORE compute units (~292,000 CU vs 3-5k for standard) because it must verify ZK proofs.
+ZK Compression actually uses more compute units (~292,000 CU vs 3-5k for standard) because it must verify ZK proofs. However, Solana's fee structure doesn't charge per compute unit for base transactions.
 
-### So Where Are The Savings?
+### Account Creation: Massive Savings
 
-The savings are in **account creation and state storage**:
+This is where ZK Compression shines:
 
 | Cost Type | Standard | Compressed | Savings |
 |-----------|----------|------------|---------|
 | Transaction fee | 5,000 lamports | 5,000 lamports | 0% |
-| Account rent | ~2,039,280 lamports | ~0 lamports | **98%** |
-| Compute units | 3-5k CU | 292k CU | -5740% (higher!) |
+| Account rent | ~2,039,280 lamports | ~0 lamports | **99.9%** |
+| Compute units | 3-5k CU | 292k CU | -5740% (higher) |
 
 ### When Does ZK Compression Make Sense?
 
-**GOOD FOR:**
+**PERFECT FOR:**
 - Airdrops to thousands of users (save millions in account creation)
 - Loyalty programs with millions of accounts
 - Mass NFT distributions
+- Gaming inventory systems
 - Any scenario creating many new token accounts
 
-**NOT GOOD FOR:**
+**NOT DESIGNED FOR:**
 - Individual 1-on-1 transfers
 - Low-volume transactions
 - Applications with few users
 
-### Example: Airdrop Economics
-
-Airdropping to 100,000 users:
-
-**Standard Solana:**
-- Account creation: 100,000 × 2,039,280 lamports = 203,928,000,000 lamports
-- Cost: ~203.9 SOL ($30,000+ at $150/SOL)
-
-**ZK Compression:**
-- Account creation: Nearly FREE
-- Cost: Only transaction fees
-
-**Savings: 203+ SOL**
+The savings scale with the number of accounts you create, not the number of transactions you send.
 
 ## Technical Details
 
@@ -139,22 +144,31 @@ Airdropping to 100,000 users:
 
 The test uses proper Light Protocol SDK methods:
 
-1. **Compression**: Uses `CompressedTokenProgram.compress()` with wrapped SOL token account
-2. **Transfer**: Uses `transfer()` function for compressed tokens
-3. **Native SOL**: Uses mint address `So11111111111111111111111111111111111111112`
+1. **Wrapped SOL Setup**: Creates associated token account for native SOL
+2. **Compression**: Uses `CompressedTokenProgram.compress()` with wrapped SOL token account
+3. **Transfer**: Uses `transfer()` function for compressed tokens
+4. **Native SOL Mint**: `So11111111111111111111111111111111111111112`
 
-### Common Pitfalls Avoided
+### How ZK Compression Works
 
-- Using `PublicKey.default()` for native SOL (incorrect)
-- Trying to transfer before compressing
-- Not creating wrapped SOL token account first
-- Expecting cheaper transaction fees
+1. Instead of creating individual token accounts (each requiring rent), compressed accounts store state in Merkle trees
+2. Only the Merkle root is stored on-chain (minimal state)
+3. Full account data is stored off-chain with cryptographic proofs
+4. Accounts can be verified and used with ZK proofs
+5. This reduces state storage costs by ~99.9%
 
 ## Resources
 
 - [Light Protocol Docs](https://www.zkcompression.com)
-- [Helius ZK Compression](https://www.helius.dev/zk-compression)
+- [Light Protocol: What is ZK Compression?](https://www.zkcompression.com/introduction/what-is-zk-compression)
+- [Helius ZK Compression Guide](https://www.helius.dev/zk-compression)
 - [Light Protocol GitHub](https://github.com/Lightprotocol/light-protocol)
+
+## Conclusion
+
+Light Protocol delivers exactly what they promise: creating Solana accounts at a fraction of the cost. The innovation isn't cheaper individual transactions—it's making applications with millions of users economically viable on Solana L1.
+
+If you're building something that needs to scale to thousands or millions of accounts, ZK Compression is a game-changer.
 
 ## License
 
