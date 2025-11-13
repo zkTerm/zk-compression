@@ -41,7 +41,7 @@ TEST_RECIPIENT_ADDRESS=YourRecipientPublicKeyHere
 ## Installation
 
 ```bash
-npm install \
+yarn add \
   @lightprotocol/stateless.js \
   @lightprotocol/compressed-token \
   @solana/web3.js \
@@ -59,7 +59,7 @@ export TEST_WALLET_MNEMONIC="your mnemonic here"
 export TEST_RECIPIENT_ADDRESS="recipient_address_here"
 
 # Run the test
-npx tsx experiments/zk-compression-fee-test.ts
+yarn dev
 ```
 
 ## What Happens During the Test
